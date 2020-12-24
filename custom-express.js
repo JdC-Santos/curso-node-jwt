@@ -1,6 +1,7 @@
 const express = require('express');
 const consign = require('consign');
 const bodyParser = require('body-parser');
+const bcrypt = require('bcrypt');
 
 
 module.exports = function () {
@@ -8,6 +9,8 @@ module.exports = function () {
     
     app.use(bodyParser.json());
     app.use(bodyParser.urlencoded({extended:true}));
+    
+    app.set('bcrypt',bcrypt);
 
     consign()
         .include('controllers')

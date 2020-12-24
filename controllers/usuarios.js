@@ -41,18 +41,24 @@ module.exports = function(app){
             res.status(400).json(msgError);
             return;
         }else{
-            var usuariosDao = new app.daos.usuariosDao( app.persistencia.db );
-            usuariosDao.salvar({nome, email, senha},(error, result) => {
 
-                if(error){
-                    console.log(error);
-                    res.status(500).json(error);
-                }else{
-                    res.status(201).json(result);
-                }
+            app.get('bcrypt').genSalt(10, function(err, salt) {
+                app.get('bcrypt').hash(senha, salt, function(err, hash) {
 
+                    var usuariosDao = new app.daos.usuariosDao( app.persistencia.db );
+                    
+                    usuariosDao.salvar({nome, email,senha: hash},(error, result) => {
+
+                        if(error){
+                            console.log(error);
+                            res.status(500).json(error);
+                        }else{
+                            res.status(201).json(result);
+                        }
+
+                    });     
+                });
             });
-
         }
     });
 
