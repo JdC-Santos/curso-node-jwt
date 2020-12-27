@@ -41,18 +41,24 @@ module.exports = function(app){
             res.status(400).json(msgError);
             return;
         }else{
-            var usuariosDao = new app.daos.usuariosDao( app.persistencia.db );
-            usuariosDao.salvar({nome, email, senha},(error, result) => {
 
-                if(error){
-                    console.log(error);
-                    res.status(500).json(error);
-                }else{
-                    res.status(201).json(result);
-                }
+            app.get('bcrypt').genSalt(10, function(err, salt) {
+                app.get('bcrypt').hash(senha, salt, function(err, hash) {
 
+                    var usuariosDao = new app.daos.usuariosDao( app.persistencia.db );
+                    
+                    usuariosDao.salvar({nome, email,senha: hash},(error, result) => {
+
+                        if(error){
+                            console.log(error);
+                            res.status(500).json(error);
+                        }else{
+                            res.status(201).json(result);
+                        }
+
+                    });     
+                });
             });
-
         }
     });
 
@@ -73,21 +79,43 @@ module.exports = function(app){
         });
     });
 
-    app.delete('/usuarios/usuario/:id', (req, res) => {
-        const id = req.params.id;
+    app.delete('/usuarios/usuario/:id',
+        app.get('passport').authenticate('bearer',{session: false}),
+        (req, res) => {
+            const id = req.params.id;
 
-        console.log(id);
+            console.log(id);
 
-        var usuariosDao = new app.daos.usuariosDao( app.persistencia.db );
-        usuariosDao.remover({id},(error, result) => {
+            var usuariosDao = new app.daos.usuariosDao( app.persistencia.db );
+            usuariosDao.remover({id},(error, result) => {
 
-            if(error){
-                console.log(error);
-                res.status(500).json(error);
-            }else{
-                res.status(204).json(result);
-            }
+                if(error){
+                    console.log(error);
+                    res.status(500).json(error);
+                }else{
+                    res.status(204).json(result);
+                }
 
-        });
+            });
     });
+
+    app.post('/usuarios/login',
+        app.get('passport').authenticate('local', { session: false }),
+        (req,res) => {
+            
+        const token = criaTokenJwt(req.user);
+        res.set('Authorization',token);
+        res.status(204).send();
+    });
+
+    function criaTokenJwt(usuario){
+
+        const payload = { 
+            id : usuario.id 
+        };
+
+        const token = app.get('jwt').sign(payload,process.env.CHAVE_JWT);
+        return token;
+    }
 }
+

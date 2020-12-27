@@ -1,0 +1,1 @@
++ utilizando bcrypt para gerar uma hash para a senha
