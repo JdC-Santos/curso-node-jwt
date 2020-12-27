@@ -15,6 +15,9 @@ usuariosDao.prototype = {
     buscarPorId: function(usuario,callback){
         this._conn.query('SELECT * FROM usuarios WHERE id = ?',usuario.id, callback);
     },
+    buscarPorEmail: function(email,callback){
+        this._conn.query('SELECT * FROM usuarios WHERE email = ?',email, callback);
+    },
     remover: function(usuario,callback){
         this._conn.query('DELETE FROM usuarios WHERE id = ?',usuario.id, callback);
     }

@@ -28,7 +28,9 @@ module.exports = function(app){
         });
     });
 
-    app.post('/posts/post', (req, res) => {
+    app.post('/posts/post',
+    app.get('passport').authenticate('bearer',{session: false}), 
+    (req, res) => {
         const { titulo, conteudo } = req.body;
 
         var msgError = {};
@@ -72,19 +74,21 @@ module.exports = function(app){
         });
     });
 
-    app.delete('/posts/post/:id', (req, res) => {
-        const id = req.params.id;
+    app.delete('/posts/post/:id',
+        app.get('passport').authenticate('bearer',{session: false}),
+        (req, res) => {
+            const id = req.params.id;
 
-        var postsDao = new app.daos.postsDao( app.persistencia.db );
-        postsDao.remover({id},(error, result) => {
+            var postsDao = new app.daos.postsDao( app.persistencia.db );
+            postsDao.remover({id},(error, result) => {
 
-            if(error){
-                console.log(error);
-                res.status(500).json(error);
-            }else{
-                res.status(204).json(result);
-            }
+                if(error){
+                    console.log(error);
+                    res.status(500).json(error);
+                }else{
+                    res.status(204).json(result);
+                }
 
-        });
+            });
     });
 }
