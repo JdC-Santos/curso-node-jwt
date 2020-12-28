@@ -14,19 +14,23 @@ module.exports = (app) => {
 	        usuario.buscarPorEmail(email, function( error, usuario ) {
 	            
 	            if(error){
-					console.log(error);
-					done( error );
+					done('Ocorreu um erro ao verificar o usuário.');
 	            }else{
+
 					if(!usuario || !usuario.length ){
-						// console.log('Não existe usuário com este email');
-						done({erro: 'Não existe usuário com este email'});
+						done('Não existe usuário com este email');
 					}else{
-						if(!verificaSenha(senha, usuario[0].senha ) ){
-							done('Não existe usuário com este email');
-						}else{
-							done(null,usuario[0]);
-						}
-					}	                
+
+						verificaSenha(senha, usuario[0].senha )
+						.then(( senhaEhValida ) => {
+
+							if ( senhaEhValida ) {
+								done(null,usuario[0]);
+							} else {
+								done('Email ou senha inválidos');
+							}
+						});
+					}
 				}
 			});
 		}
@@ -34,31 +38,26 @@ module.exports = (app) => {
 
 	app.get('passport').use( new bearerStrategy(
 		(token, done) => {
-			const payload = app.get('jwt').verify(token, process.env.CHAVE_JWT);
+			app.get('jwt').verify(token, process.env.CHAVE_JWT, (error, payload) =>{
 
-			var usuarioDao = new app.daos.usuariosDao( app.persistencia.db );
-
-			usuarioDao.buscarPorId({ id: payload.id },function(error, usuario){
-				if(error || !usuario.length ){
-					done('Usuário nao encontrado');
+				if(error){
+					done(error);
 				}else{
-					done(null, usuario[0]);
+					var usuarioDao = new app.daos.usuariosDao( app.persistencia.db );
+			
+					usuarioDao.buscarPorId({ id: payload.id },function(error, usuario){
+						if(error || !usuario.length ){
+							done('Usuário nao encontrado');
+						}else{
+							done(null, usuario[0]);
+						}
+					});
 				}
-			});
+			});			
 		})
 	);
 
-	// app.get('passport').serializeUser(function(user, done) {
-	//     console.log(user);
-	//     done(null, user);
-	// });
-	  
-	// app.get('passport').deserializeUser(function(user, done) {
-	//     done(null, user);
-	// });
-
-	function verificaSenha(senha, senhaHash){
-		return app.get('bcrypt').compare(senha, senhaHash);
+	async function verificaSenha(senha, senhaHash){
+		return await app.get('bcrypt').compare(senha, senhaHash);
 	}
-
 }

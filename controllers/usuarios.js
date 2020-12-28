@@ -1,3 +1,5 @@
+const middlewareAuthentication = require('../middlewares/authentication');
+
 module.exports = function(app){
 
     app.get('/usuarios',(req, res) => {
@@ -80,7 +82,7 @@ module.exports = function(app){
     });
 
     app.delete('/usuarios/usuario/:id',
-        app.get('passport').authenticate('bearer',{session: false}),
+        middlewareAuthentication.bearer,
         (req, res) => {
             const id = req.params.id;
 
@@ -100,13 +102,13 @@ module.exports = function(app){
     });
 
     app.post('/usuarios/login',
-        app.get('passport').authenticate('local', { session: false }),
+        middlewareAuthentication.local,
         (req,res) => {
-            
-        const token = criaTokenJwt(req.user);
-        res.set('Authorization',token);
-        res.status(204).send();
-    });
+            const token = criaTokenJwt(req.user);
+            res.set('Authorization',token);
+            res.status(204).send();
+        }
+    );
 
     function criaTokenJwt(usuario){
 
@@ -114,7 +116,7 @@ module.exports = function(app){
             id : usuario.id 
         };
 
-        const token = app.get('jwt').sign(payload,process.env.CHAVE_JWT);
+        const token = app.get('jwt').sign(payload,process.env.CHAVE_JWT,{expiresIn: '15m'});
         return token;
     }
 }
