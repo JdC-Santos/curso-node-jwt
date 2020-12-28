@@ -1,3 +1,5 @@
+const middlewareAuthentication = require('../middlewares/authentication');
+
 module.exports = function(app){
 
     app.get('/posts',(req, res) => {
@@ -29,7 +31,7 @@ module.exports = function(app){
     });
 
     app.post('/posts/post',
-    app.get('passport').authenticate('bearer',{session: false}), 
+    middlewareAuthentication.bearer, 
     (req, res) => {
         const { titulo, conteudo } = req.body;
 
@@ -75,7 +77,7 @@ module.exports = function(app){
     });
 
     app.delete('/posts/post/:id',
-        app.get('passport').authenticate('bearer',{session: false}),
+        middlewareAuthentication.bearer,
         (req, res) => {
             const id = req.params.id;
 

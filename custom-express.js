@@ -6,6 +6,7 @@ const passport = require('passport');
 const passportLocal = require('passport-local');
 const jwt = require('jsonwebtoken');
 const bearer = require('passport-http-bearer');
+
 require('dotenv').config();
 
 module.exports = function () {
@@ -13,7 +14,7 @@ module.exports = function () {
     
     app.use(bodyParser.json());
     app.use(bodyParser.urlencoded({extended:true}));
-    
+
     app.set('bcrypt',bcrypt);
     
     app.set('passport', passport);
@@ -21,7 +22,6 @@ module.exports = function () {
     app.set('bearer',bearer);
 
     app.set('jwt',jwt);
-    app.set("JWT_SECRET",'123456abc');
 
     consign()
         .include('controllers')
